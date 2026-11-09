@@ -10,6 +10,9 @@ const GAME_KEYS = [...LEFT_KEYS, ...RIGHT_KEYS, FIRE_KEY];
  */
 export class KeyboardView {
   #pressed = new Set();
+  // Teclas capturadas que siguen físicamente pulsadas: sus repeticiones y su
+  // keyup no deben llegar al botón que reciba el foco durante la pausa.
+  #held = new Set();
   #capture = false;
   #onPauseKey = null;
   #onFocusLost = null;
@@ -52,19 +55,23 @@ export class KeyboardView {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     const key = event.key.toLowerCase();
     if (key === PAUSE_KEY && !event.repeat) this.#onPauseKey?.();
-    if (!this.#capture || !GAME_KEYS.includes(key)) return;
-    event.preventDefault();
-    this.#pressed.add(key);
+    if (!GAME_KEYS.includes(key)) return;
+    if (this.#capture) {
+      this.#held.add(key);
+      this.#pressed.add(key);
+    }
+    if (this.#held.has(key)) event.preventDefault();
   }
 
   #keyUp(event) {
     const key = event.key.toLowerCase();
     this.#pressed.delete(key);
-    if (this.#capture && GAME_KEYS.includes(key)) event.preventDefault();
+    if (this.#held.delete(key)) event.preventDefault();
   }
 
   #focusLost() {
     this.reset();
+    this.#held.clear();
     this.#onFocusLost?.();
   }
 }

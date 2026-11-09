@@ -2,7 +2,7 @@ const VISIBLE_CLASS = 'panel--visible';
 
 /** Paneles sobre el lienzo, selector de dificultad y diálogo de ayuda. */
 export class OverlayView {
-  #stage = document.querySelector('.stage');
+  #stage = document.getElementById('stage');
   #setupPanel = document.getElementById('setupPanel');
   #setupTitle = document.getElementById('setupTitle');
   #setupSummary = document.getElementById('setupSummary');

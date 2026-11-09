@@ -3,7 +3,7 @@ export class HudView {
   #score = document.getElementById('score');
   #wave = document.getElementById('wave');
   #lives = document.getElementById('lives');
-  #root = document.querySelector('.hud');
+  #root = document.getElementById('hud');
   #pauseButton = this.#root.querySelector('[data-action="pause"]');
   #finishButton = this.#root.querySelector('[data-action="finish"]');
   #handlers = {};
