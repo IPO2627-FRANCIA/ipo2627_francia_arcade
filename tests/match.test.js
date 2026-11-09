@@ -154,6 +154,14 @@ test('wave stays while enemies remain', () => {
   assert.equal(match.wave, 1);
 });
 
+test('initialLives stays fixed when lives are lost', () => {
+  const match = newMatch();
+  enemyShotOn(match, match.ship);
+  match.resolveCollisions();
+  assert.equal(match.lives, 2);
+  assert.equal(match.initialLives, 3);
+});
+
 test('difficulty sets initial lives', () => {
   for (const id of Object.keys(Match.DIFFICULTIES)) {
     assert.equal(newMatch(id).lives, Match.DIFFICULTIES[id].lives);

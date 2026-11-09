@@ -48,7 +48,12 @@ export class GameController {
     this.#match.update(dt);
     this.#match.resolveCollisions();
     this.#canvas.render(this.#match);
-    this.#hud.update({ score: this.#match.score, wave: this.#match.wave, lives: this.#match.lives });
+    this.#hud.update({
+      score: this.#match.score,
+      wave: this.#match.wave,
+      lives: this.#match.lives,
+      maxLives: this.#match.initialLives,
+    });
     this.#checkEnd();
   };
 

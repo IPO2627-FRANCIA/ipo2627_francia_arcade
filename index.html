@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Enjambre: matamarcianos hecho con Canvas.">
-  <title>Enjambre</title>
+  <meta name="description" content="Matamarcianos hecho con Canvas.">
+  <title>Matamarcianos</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="style.css">
   <script type="module" src="script.js"></script>
@@ -17,26 +17,39 @@
       aria-label="Zona de juego. Mueve la nave con las flechas y dispara con Espacio."></canvas>
 
     <section class="hud" id="hud" aria-label="Marcador de la partida">
-      <dl class="hud__stats">
-        <div class="hud__stat">
-          <dt class="hud__label">Puntos</dt>
-          <dd class="hud__value" id="score">0</dd>
+      <div class="hud__stat">
+        <span class="hud__label">Puntos</span>
+        <output class="hud__score" id="score">000000</output>
+      </div>
+
+      <div class="hud__stat hud__stat--center">
+        <span class="hud__label">Oleada</span>
+        <output class="hud__value" id="wave">1</output>
+      </div>
+
+      <div class="hud__end">
+        <div class="hud__stat hud__stat--end">
+          <span class="hud__label">Vidas</span>
+          <span class="hud__lives" id="lives" role="img"></span>
         </div>
-        <div class="hud__stat">
-          <dt class="hud__label">Oleada</dt>
-          <dd class="hud__value" id="wave">1</dd>
-        </div>
-        <div class="hud__stat">
-          <dt class="hud__label">Vidas</dt>
-          <dd class="hud__value" id="lives">3</dd>
-        </div>
-      </dl>
-      <button class="button button--compact" type="button" data-action="pause" disabled>Pausar</button>
+        <button class="button button--compact" type="button" data-action="pause" disabled>
+          <svg class="button__icon" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M2 1h3v10H2zM7 1h3v10H7z" />
+          </svg>
+          Pausar
+        </button>
+      </div>
     </section>
+
+    <template id="lifeTemplate">
+      <svg class="hud__life" viewBox="0 0 44 36" aria-hidden="true">
+        <path d="M22 0 44 36 22 26 0 36Z" />
+      </svg>
+    </template>
 
     <section class="panel panel--visible" id="setupPanel" aria-labelledby="setupTitle">
       <div class="panel__content">
-        <h1 class="panel__title panel__title--display" id="setupTitle">Enjambre</h1>
+        <h1 class="panel__title panel__title--display" id="setupTitle">Matamarcianos</h1>
         <p class="panel__text" id="setupSummary">Destruye la formación antes de que llegue a tu altura.</p>
 
         <fieldset class="difficulty">
@@ -80,14 +93,16 @@
 
       <section class="help__section">
         <h3 class="help__subtitle">Objetivo</h3>
-        <p class="help__text">Destruye la formación enemiga antes de que llegue a tu altura. Los enemigos de las filas altas valen más puntos. Al eliminar la formación entera empieza otra más rápida.</p>
+        <p class="help__text">Destruye la formación enemiga antes de que llegue a tu altura. Los enemigos de las filas
+          altas valen más puntos. Al eliminar la formación entera empieza otra más rápida.</p>
       </section>
 
       <section class="help__section">
         <h3 class="help__subtitle">Controles</h3>
         <dl class="help__keys">
           <div class="help__row">
-            <dt class="help__combo"><kbd class="help__key">←</kbd> <kbd class="help__key">→</kbd> o <kbd class="help__key">A</kbd> <kbd class="help__key">D</kbd></dt>
+            <dt class="help__combo"><kbd class="help__key">←</kbd> <kbd class="help__key">→</kbd> o <kbd
+                class="help__key">A</kbd> <kbd class="help__key">D</kbd></dt>
             <dd>Mover la nave</dd>
           </div>
           <div class="help__row">
@@ -103,7 +118,9 @@
 
       <section class="help__section">
         <h3 class="help__subtitle">Vidas</h3>
-        <p class="help__text">Pierdes una vida si te alcanza un disparo; tras el golpe, la nave es invulnerable un momento. Las barreras te protegen, pero cada impacto las desgasta. La partida termina al quedarte sin vidas o si la formación llega a tu altura.</p>
+        <p class="help__text">Pierdes una vida si te alcanza un disparo; tras el golpe, la nave es invulnerable un
+          momento. Las barreras te protegen, pero cada impacto las desgasta. La partida termina al quedarte sin vidas o
+          si la formación llega a tu altura.</p>
       </section>
 
       <form class="help__actions" method="dialog">
