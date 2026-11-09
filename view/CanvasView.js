@@ -23,12 +23,14 @@ export class CanvasView {
       enemy: color('--color-enemy'),
       enemyStrong: color('--color-enemy-strong'),
       enemyShot: color('--color-enemy-shot'),
+      barrier: color('--color-barrier'),
     };
   }
 
   render(match) {
     this.#ctx.clearRect(0, 0, WORLD.width, WORLD.height);
     if (!match) return;
+    match.barrierBlocks.forEach((block) => this.#drawBarrierBlock(block));
     match.enemies.forEach((enemy) => this.#drawEnemy(enemy));
     match.projectiles.forEach((projectile) => this.#drawProjectile(projectile));
     this.#drawShip(match.ship);
@@ -55,8 +57,31 @@ export class CanvasView {
   }
 
   #drawEnemy(enemy) {
-    if (enemy.kind === 'gunner') this.#drawGunner(enemy);
-    else this.#drawDrone(enemy);
+    if (enemy.kind === 'elite') this.#drawElite(enemy);
+    else if (enemy.kind === 'drone') this.#drawDrone(enemy);
+    else this.#drawScout(enemy);
+  }
+
+  #drawBarrierBlock({ x, y, width, height }) {
+    this.#ctx.fillStyle = this.#colors.barrier;
+    this.#ctx.fillRect(x, y, width, height);
+  }
+
+  /** Casco ancho con dos patas centrales. */
+  #drawScout({ x, y, width, height }) {
+    const ctx = this.#ctx;
+    ctx.fillStyle = this.#colors.enemy;
+    ctx.beginPath();
+    ctx.moveTo(x + width * 0.2, y);
+    ctx.lineTo(x + width * 0.8, y);
+    ctx.lineTo(x + width, y + height * 0.6);
+    ctx.lineTo(x + width * 0.7, y + height * 0.6);
+    ctx.lineTo(x + width * 0.6, y + height);
+    ctx.lineTo(x + width * 0.4, y + height);
+    ctx.lineTo(x + width * 0.3, y + height * 0.6);
+    ctx.lineTo(x, y + height * 0.6);
+    ctx.closePath();
+    ctx.fill();
   }
 
   /** Cuerpo redondo con dos alas triangulares. */
@@ -81,8 +106,8 @@ export class CanvasView {
     ctx.fill();
   }
 
-  /** Hexágono oscuro con un ojo central: aguanta dos disparos y dispara. */
-  #drawGunner({ x, y, width, height }) {
+  /** Hexágono oscuro con un ojo central. */
+  #drawElite({ x, y, width, height }) {
     const ctx = this.#ctx;
     ctx.fillStyle = this.#colors.enemyStrong;
     ctx.beginPath();

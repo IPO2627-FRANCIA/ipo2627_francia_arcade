@@ -1,29 +1,36 @@
 import { Ship } from './Ship.js';
-import { Swarm } from './Swarm.js';
+import { Formation } from './Formation.js';
+import { createBarrierBlocks } from './barriers.js';
 
 /**
- * Estado de una partida y sus reglas: movimiento, colisiones, puntos y vidas.
- * No conoce las fases de la aplicación: quien decide qué pasa cuando las
- * vidas llegan a cero es GameController.
+ * Estado de una partida y sus reglas: movimiento, colisiones, puntos, vidas y
+ * oleadas. Solo expone hechos (vidas, hasLanded): quien decide que la partida
+ * ha terminado es GameController.
  */
 export class Match {
   static DIFFICULTIES = Object.freeze({
-    easy: { speed: 0.8, spawnEvery: 2.4, lives: 5 },
-    normal: { speed: 1, spawnEvery: 2, lives: 3 },
-    hard: { speed: 1.2, spawnEvery: 1.4, lives: 3 },
+    easy: { stepEvery: 0.7, fireEvery: 2, lives: 5 },
+    normal: { stepEvery: 0.55, fireEvery: 1.4, lives: 3 },
+    hard: { stepEvery: 0.42, fireEvery: 1, lives: 3 },
   });
+  static WAVE_STEP_FACTOR = 0.9;
+  static MAX_WAVE_DROPS = 4;
 
   #ship = new Ship();
-  #swarm;
-  #enemies = [];
+  #difficulty;
+  #random;
+  #formation;
+  #barrierBlocks = createBarrierBlocks();
   #projectiles = [];
   #score = 0;
+  #wave = 1;
   #lives;
 
   constructor(difficultyId, random = Math.random) {
-    const difficulty = Match.DIFFICULTIES[difficultyId];
-    this.#swarm = new Swarm(difficulty, random);
-    this.#lives = difficulty.lives;
+    this.#difficulty = Match.DIFFICULTIES[difficultyId];
+    this.#random = random;
+    this.#lives = this.#difficulty.lives;
+    this.#formation = this.#createFormation();
   }
 
   get ship() {
@@ -31,7 +38,11 @@ export class Match {
   }
 
   get enemies() {
-    return this.#enemies;
+    return this.#formation.enemies;
+  }
+
+  get barrierBlocks() {
+    return this.#barrierBlocks;
   }
 
   get projectiles() {
@@ -47,7 +58,12 @@ export class Match {
   }
 
   get wave() {
-    return this.#swarm.wave;
+    return this.#wave;
+  }
+
+  /** La formación ha llegado a la altura de la nave. */
+  get hasLanded() {
+    return !this.#formation.isCleared && this.#formation.lowestEdge > this.#ship.y;
   }
 
   steerShip(direction) {
@@ -55,72 +71,76 @@ export class Match {
   }
 
   fireShip() {
-    this.#addProjectile(this.#ship.tryFire());
+    const shot = this.#ship.tryFire();
+    if (shot) this.#projectiles.push(shot);
   }
 
   update(dt) {
+    if (this.#formation.isCleared) this.#startNextWave();
     this.#ship.update(dt);
-    this.#enemies.forEach((enemy) => enemy.update(dt));
     this.#projectiles.forEach((projectile) => projectile.move(dt));
-    this.#enemies.push(...this.#swarm.update(dt));
-    this.#enemies.forEach((enemy) => this.#addProjectile(enemy.tryFire()));
-    this.#removeEscapedEnemies();
+    this.#projectiles.push(...this.#formation.update(dt));
     this.#projectiles = this.#projectiles.filter((projectile) => !projectile.isOutOfWorld);
   }
 
   resolveCollisions() {
     this.#resolveShipShots();
     this.#resolveEnemyShots();
-    this.#resolveEnemyContacts();
+    this.#eraseBarriersUnderEnemies();
   }
 
-  #addProjectile(projectile) {
-    if (projectile) this.#projectiles.push(projectile);
+  #createFormation() {
+    const { stepEvery, fireEvery } = this.#difficulty;
+    const previousWaves = this.#wave - 1;
+    return new Formation({
+      stepEvery: stepEvery * Match.WAVE_STEP_FACTOR ** previousWaves,
+      fireEvery,
+      top: Formation.TOP + Math.min(previousWaves, Match.MAX_WAVE_DROPS) * Formation.STEP_Y,
+    }, this.#random);
   }
 
-  #removeEscapedEnemies() {
-    this.#enemies.filter((enemy) => enemy.hasEscaped).forEach(() => this.#loseLife());
-    this.#enemies = this.#enemies.filter((enemy) => !enemy.hasEscaped);
+  #startNextWave() {
+    this.#wave += 1;
+    this.#formation = this.#createFormation();
+    this.#barrierBlocks = createBarrierBlocks();
   }
 
   #resolveShipShots() {
     for (const shot of this.#projectiles.filter(({ owner }) => owner === 'ship')) {
-      const enemy = this.#enemies.find((candidate) => shot.overlaps(candidate));
-      if (!enemy) continue;
-      this.#removeFrom(this.#projectiles, shot);
-      enemy.damage();
-      if (enemy.isDestroyed) this.#destroyEnemy(enemy);
+      const enemy = this.enemies.find((candidate) => shot.overlaps(candidate));
+      if (enemy) {
+        this.#score += enemy.points;
+        this.#formation.remove(enemy);
+        this.#removeFrom(this.#projectiles, shot);
+      } else if (this.#hitBarrier(shot)) {
+        this.#removeFrom(this.#projectiles, shot);
+      }
     }
-  }
-
-  #destroyEnemy(enemy) {
-    this.#score += enemy.points;
-    this.#removeFrom(this.#enemies, enemy);
   }
 
   #resolveEnemyShots() {
     for (const shot of this.#projectiles.filter(({ owner }) => owner === 'enemy')) {
-      if (this.#ship.isInvulnerable || !shot.overlaps(this.#ship)) continue;
-      this.#removeFrom(this.#projectiles, shot);
-      this.#hitShip();
+      if (this.#hitBarrier(shot)) {
+        this.#removeFrom(this.#projectiles, shot);
+      } else if (!this.#ship.isInvulnerable && shot.overlaps(this.#ship)) {
+        this.#removeFrom(this.#projectiles, shot);
+        this.#ship.hit();
+        this.#lives = Math.max(0, this.#lives - 1);
+      }
     }
   }
 
-  #resolveEnemyContacts() {
-    for (const enemy of [...this.#enemies]) {
-      if (this.#ship.isInvulnerable || !enemy.overlaps(this.#ship)) continue;
-      this.#removeFrom(this.#enemies, enemy);
-      this.#hitShip();
-    }
+  /** Destruye el primer bloque que toca la entidad e indica si lo ha hecho. */
+  #hitBarrier(entity) {
+    const block = this.#barrierBlocks.find((candidate) => entity.overlaps(candidate));
+    if (block) this.#removeFrom(this.#barrierBlocks, block);
+    return Boolean(block);
   }
 
-  #hitShip() {
-    this.#ship.hit();
-    this.#loseLife();
-  }
-
-  #loseLife() {
-    this.#lives = Math.max(0, this.#lives - 1);
+  #eraseBarriersUnderEnemies() {
+    this.enemies.forEach((enemy) => {
+      while (this.#hitBarrier(enemy));
+    });
   }
 
   #removeFrom(list, item) {

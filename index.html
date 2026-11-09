@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Enjambre: juego arcade de naves hecho con Canvas.">
+  <meta name="description" content="Enjambre: matamarcianos hecho con Canvas.">
   <title>Enjambre</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="style.css">
@@ -12,38 +12,31 @@
 </head>
 
 <body class="app">
-  <header class="hud" id="hud">
-    <h1 class="hud__title">Enjambre</h1>
-
-    <dl class="hud__stats">
-      <div class="hud__stat">
-        <dt class="hud__label">Puntos</dt>
-        <dd class="hud__value" id="score">0</dd>
-      </div>
-      <div class="hud__stat">
-        <dt class="hud__label">Oleada</dt>
-        <dd class="hud__value" id="wave">1</dd>
-      </div>
-      <div class="hud__stat">
-        <dt class="hud__label">Vidas</dt>
-        <dd class="hud__value" id="lives">3</dd>
-      </div>
-    </dl>
-
-    <nav class="hud__actions" aria-label="Acciones de la partida">
-      <button class="button" type="button" data-action="pause" disabled>Pausar</button>
-      <button class="button" type="button" data-action="finish" disabled>Finalizar</button>
-      <button class="button" type="button" data-action="help">Ayuda</button>
-    </nav>
-  </header>
-
   <main class="stage" id="stage">
     <canvas class="stage__canvas" id="appCanvas" width="800" height="600" tabindex="0"
       aria-label="Zona de juego. Mueve la nave con las flechas y dispara con Espacio."></canvas>
 
+    <section class="hud" id="hud" aria-label="Marcador de la partida">
+      <dl class="hud__stats">
+        <div class="hud__stat">
+          <dt class="hud__label">Puntos</dt>
+          <dd class="hud__value" id="score">0</dd>
+        </div>
+        <div class="hud__stat">
+          <dt class="hud__label">Oleada</dt>
+          <dd class="hud__value" id="wave">1</dd>
+        </div>
+        <div class="hud__stat">
+          <dt class="hud__label">Vidas</dt>
+          <dd class="hud__value" id="lives">3</dd>
+        </div>
+      </dl>
+      <button class="button button--compact" type="button" data-action="pause" disabled>Pausar</button>
+    </section>
+
     <section class="panel panel--visible" id="setupPanel" aria-labelledby="setupTitle">
-      <h2 class="panel__title" id="setupTitle">Nueva partida</h2>
-      <p class="panel__text" id="setupSummary">Destruye el enjambre antes de que cruce el borde inferior.</p>
+      <h1 class="panel__title" id="setupTitle">Enjambre</h1>
+      <p class="panel__text" id="setupSummary">Destruye la formación antes de que llegue a tu altura.</p>
 
       <fieldset class="difficulty">
         <legend class="difficulty__legend">Dificultad</legend>
@@ -63,12 +56,19 @@
         </div>
       </fieldset>
 
-      <button class="button button--primary" type="button" data-action="start" autofocus>Comenzar</button>
+      <div class="panel__actions">
+        <button class="button button--primary" type="button" data-action="start" autofocus>Comenzar</button>
+        <button class="button" type="button" data-action="help">Ayuda</button>
+      </div>
     </section>
 
     <section class="panel" id="pausePanel" aria-labelledby="pauseTitle">
       <h2 class="panel__title" id="pauseTitle">Partida en pausa</h2>
-      <button class="button button--primary" type="button" data-action="resume">Continuar</button>
+      <div class="panel__actions">
+        <button class="button button--primary" type="button" data-action="resume">Continuar</button>
+        <button class="button" type="button" data-action="help">Ayuda</button>
+        <button class="button" type="button" data-action="finish">Finalizar</button>
+      </div>
     </section>
   </main>
 
@@ -78,7 +78,7 @@
 
       <section class="help__section">
         <h3 class="help__subtitle">Objetivo</h3>
-        <p class="help__text">Destruye a los enemigos que bajan y consigue todos los puntos que puedas. Cada oleada es más rápida que la anterior.</p>
+        <p class="help__text">Destruye la formación enemiga antes de que llegue a tu altura. Los enemigos de las filas altas valen más puntos. Al eliminar la formación entera empieza otra más rápida.</p>
       </section>
 
       <section class="help__section">
@@ -92,7 +92,7 @@
 
       <section class="help__section">
         <h3 class="help__subtitle">Vidas</h3>
-        <p class="help__text">Pierdes una vida si un enemigo o su disparo alcanza tu nave, y también si un enemigo escapa por abajo. Tras un golpe, la nave es invulnerable un momento. Los enemigos oscuros aguantan dos disparos y también disparan. La partida termina al quedarte sin vidas.</p>
+        <p class="help__text">Pierdes una vida si te alcanza un disparo; tras el golpe, la nave es invulnerable un momento. Las barreras te protegen, pero cada impacto las desgasta. La partida termina al quedarte sin vidas o si la formación llega a tu altura.</p>
       </section>
 
       <form class="help__actions" method="dialog">

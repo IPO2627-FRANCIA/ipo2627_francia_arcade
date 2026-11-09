@@ -1,11 +1,10 @@
-/** Marcador y botones de la cabecera. */
+/** Marcador y botón de pausa, dentro del espacio de juego. */
 export class HudView {
   #score = document.getElementById('score');
   #wave = document.getElementById('wave');
   #lives = document.getElementById('lives');
   #root = document.getElementById('hud');
   #pauseButton = this.#root.querySelector('[data-action="pause"]');
-  #finishButton = this.#root.querySelector('[data-action="finish"]');
   #handlers = {};
 
   constructor() {
@@ -26,7 +25,7 @@ export class HudView {
   }
 
   setPhase(phase) {
+    this.#root.classList.toggle('hud--visible', phase === 'playing' || phase === 'paused');
     this.#pauseButton.disabled = phase !== 'playing';
-    this.#finishButton.disabled = phase !== 'playing' && phase !== 'paused';
   }
 }

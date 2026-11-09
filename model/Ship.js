@@ -9,7 +9,7 @@ export class Ship extends Entity {
   static ACCELERATION = 2400;
   static FRICTION = 6;
   static MAX_SPEED = 420;
-  static FIRE_COOLDOWN = 0.22;
+  static FIRE_COOLDOWN = 0.4;
   static INVULNERABLE_TIME = 1.5;
 
   #direction = 0;
