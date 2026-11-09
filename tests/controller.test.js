@@ -85,6 +85,7 @@ function setup() {
       score: 120,
       wave: 4,
       lives: 3,
+      hasLanded: false,
       steps: [],
       steers: [],
       fires: 0,
@@ -230,16 +231,17 @@ test('finish from paused goes to over', () => {
   const { overlay, hud, frames } = setup();
   overlay.handlers.start();
   hud.handlers.pause();
-  hud.handlers.finish();
+  overlay.handlers.finish();
   assert.equal(lastOf(hud.phases), 'over');
   assert.equal(frames.size, 0);
   assert.equal(overlay.setup.length, 1);
 });
 
-test('finish while playing stops the loop', () => {
-  const { overlay, hud, frames } = setup();
+test('controller ends the match when the formation lands', () => {
+  const { overlay, hud, matches, frames, runFrame } = setup();
   overlay.handlers.start();
-  hud.handlers.finish();
+  matches[0].hasLanded = true;
+  runFrame(16);
   assert.equal(lastOf(hud.phases), 'over');
   assert.equal(frames.size, 0);
 });
@@ -247,7 +249,8 @@ test('finish while playing stops the loop', () => {
 test('a new match can start after the previous one is over', () => {
   const { overlay, hud, matches, frames } = setup();
   overlay.handlers.start();
-  hud.handlers.finish();
+  hud.handlers.pause();
+  overlay.handlers.finish();
   overlay.handlers.start();
   assert.equal(matches.length, 2);
   assert.equal(frames.size, 1);
@@ -281,25 +284,17 @@ test('pause key does nothing in the menu', () => {
 test('pause key is ignored while help is open', () => {
   const { overlay, hud, keyboard, frames } = setup();
   overlay.handlers.start();
-  hud.handlers.help();
+  hud.handlers.pause();
+  overlay.handlers.help();
   overlay.isHelpOpen = true;
   keyboard.pauseKey();
   assert.equal(lastOf(hud.phases), 'paused');
   assert.equal(frames.size, 0);
 });
 
-test('opening help while playing pauses', () => {
-  const { overlay, hud, frames } = setup();
-  overlay.handlers.start();
-  hud.handlers.help();
-  assert.equal(overlay.helpCount, 1);
-  assert.equal(lastOf(hud.phases), 'paused');
-  assert.equal(frames.size, 0);
-});
-
 test('opening help in the menu keeps the menu phase', () => {
   const { overlay, hud } = setup();
-  hud.handlers.help();
+  overlay.handlers.help();
   assert.equal(overlay.helpCount, 1);
   assert.equal(lastOf(hud.phases), 'menu');
 });

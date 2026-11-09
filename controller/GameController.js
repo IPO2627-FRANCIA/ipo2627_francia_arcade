@@ -28,10 +28,10 @@ export class GameController {
 
   start() {
     this.#hud.onAction('pause', () => this.#pause());
-    this.#hud.onAction('finish', () => this.#finish());
-    this.#hud.onAction('help', () => this.#openHelp());
     this.#overlay.onAction('start', () => this.#startMatch());
     this.#overlay.onAction('resume', () => this.#resume());
+    this.#overlay.onAction('finish', () => this.#finish());
+    this.#overlay.onAction('help', () => this.#overlay.openHelp());
     this.#keyboard.onPauseKey(() => this.#togglePause());
     this.#keyboard.onFocusLost(() => this.#pause());
 
@@ -65,7 +65,7 @@ export class GameController {
   }
 
   #checkEnd() {
-    if (this.#match.lives === 0) this.#finish();
+    if (this.#match.lives === 0 || this.#match.hasLanded) this.#finish();
   }
 
   #startLoop() {
@@ -125,10 +125,5 @@ export class GameController {
       summary: `Has conseguido ${this.#match.score} puntos y has llegado a la oleada ${this.#match.wave}.`,
     });
     this.#enterPhase('over');
-  }
-
-  #openHelp() {
-    this.#pause();
-    this.#overlay.openHelp();
   }
 }

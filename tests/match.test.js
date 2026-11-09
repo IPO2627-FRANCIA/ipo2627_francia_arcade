@@ -1,139 +1,169 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { WORLD } from '../model/Entity.js';
-import { Enemy } from '../model/Enemy.js';
+import { Formation } from '../model/Formation.js';
 import { Projectile } from '../model/Projectile.js';
+import { Ship } from '../model/Ship.js';
 import { Match } from '../model/Match.js';
 
-const newMatch = (difficulty = 'normal') => new Match(difficulty, () => 0.5);
+const newMatch = (difficulty = 'normal') => new Match(difficulty, () => 0);
 
-/** Enemigo situado exactamente sobre la entidad indicada. */
-const enemyOver = (kind, target) => {
-  const enemy = new Enemy(kind, target.x, 1);
-  enemy.y = target.y;
-  return enemy;
-};
-
-const enemyFarFromShip = (kind) => {
-  const enemy = new Enemy(kind, 100, 1);
-  enemy.y = 100;
-  return enemy;
-};
-
-const shipShotOn = (match, enemy) => {
-  const shot = Projectile.fromShip(match.ship);
-  shot.x = enemy.x + 1;
-  shot.y = enemy.y + 1;
+const shotOn = (factory, match, target) => {
+  const shot = factory(match.ship);
+  shot.x = target.x + 1;
+  shot.y = target.y + 1;
   match.projectiles.push(shot);
   return shot;
 };
+const shipShotOn = (match, target) => shotOn((ship) => Projectile.fromShip(ship), match, target);
+const enemyShotOn = (match, target) => shotOn((ship) => Projectile.fromEnemy(ship), match, target);
 
-test('ship shot damages enemy and awards points when destroyed', () => {
+test('ship shot destroys the enemy and awards its points', () => {
   const match = newMatch();
-  const enemy = enemyFarFromShip('drone');
-  match.enemies.push(enemy);
+  const enemy = match.enemies[0];
+  const total = match.enemies.length;
   shipShotOn(match, enemy);
   match.resolveCollisions();
   assert.equal(match.score, enemy.points);
-  assert.equal(match.enemies.length, 0);
+  assert.equal(match.enemies.length, total - 1);
   assert.equal(match.projectiles.length, 0);
 });
 
-test('gunner survives first shot and scores nothing', () => {
+test('one shot destroys only one of two overlapping enemies', () => {
   const match = newMatch();
-  const enemy = enemyFarFromShip('gunner');
-  match.enemies.push(enemy);
-  shipShotOn(match, enemy);
-  match.resolveCollisions();
-  assert.equal(match.score, 0);
-  assert.equal(match.enemies.length, 1);
-  assert.equal(match.projectiles.length, 0);
-});
-
-test('one shot damages only one of two overlapping enemies', () => {
-  const match = newMatch();
-  const first = enemyFarFromShip('drone');
-  const second = enemyFarFromShip('drone');
-  match.enemies.push(first, second);
+  const [first, second] = match.enemies;
+  second.x = first.x;
+  const total = match.enemies.length;
   shipShotOn(match, first);
   match.resolveCollisions();
-  assert.equal(match.enemies.length, 1);
-  assert.equal(match.score, first.points);
+  assert.equal(match.enemies.length, total - 1);
 });
 
-test('enemy shot costs one life and removes the shot', () => {
+test('enemy shot costs one life, removes the shot and protects the ship', () => {
   const match = newMatch();
-  const shot = Projectile.fromEnemy(enemyFarFromShip('gunner'));
-  shot.x = match.ship.x + 1;
-  shot.y = match.ship.y + 1;
-  match.projectiles.push(shot);
+  enemyShotOn(match, match.ship);
   match.resolveCollisions();
   assert.equal(match.lives, 2);
   assert.equal(match.projectiles.length, 0);
   assert.equal(match.ship.isInvulnerable, true);
 });
 
-test('enemy touching ship costs one life and destroys the enemy without points', () => {
-  const match = newMatch();
-  match.enemies.push(enemyOver('drone', match.ship));
-  match.resolveCollisions();
-  assert.equal(match.lives, 2);
-  assert.equal(match.enemies.length, 0);
-  assert.equal(match.score, 0);
-});
-
-test('invulnerable ship loses no life from contact', () => {
+test('invulnerable ship loses no life and the shot passes', () => {
   const match = newMatch();
   match.ship.hit();
-  match.enemies.push(enemyOver('drone', match.ship));
+  enemyShotOn(match, match.ship);
   match.resolveCollisions();
   assert.equal(match.lives, 3);
+  assert.equal(match.projectiles.length, 1);
 });
 
-test('two enemies touching ship in one frame cost one life', () => {
+test('two enemy shots in one frame cost one life', () => {
   const match = newMatch();
-  match.enemies.push(enemyOver('drone', match.ship), enemyOver('drone', match.ship));
+  enemyShotOn(match, match.ship);
+  enemyShotOn(match, match.ship);
   match.resolveCollisions();
   assert.equal(match.lives, 2);
 });
 
-test('escaped enemy costs one life even while invulnerable, and only once across frames', () => {
+test('lives never go below zero', () => {
   const match = newMatch();
-  match.ship.hit();
-  const enemy = enemyFarFromShip('drone');
-  enemy.y = WORLD.height + 1;
-  match.enemies.push(enemy);
-  match.update(0);
-  assert.equal(match.lives, 2);
-  match.update(0);
-  match.update(0);
-  assert.equal(match.lives, 2);
-  assert.equal(match.enemies.length, 0);
-});
-
-test('lives never go below zero with several hits in one frame', () => {
-  const match = new Match('hard', () => 0.5);
-  match.ship.hit();
   for (let i = 0; i < 5; i++) {
-    const enemy = enemyFarFromShip('drone');
-    enemy.y = WORLD.height + 1;
-    match.enemies.push(enemy);
+    enemyShotOn(match, match.ship);
+    match.resolveCollisions();
+    match.ship.update(Ship.INVULNERABLE_TIME + 0.1);
+    match.projectiles.length = 0;
   }
-  match.update(0);
   assert.equal(match.lives, 0);
 });
 
-test('difficulty sets initial lives', () => {
-  assert.equal(newMatch('easy').lives, Match.DIFFICULTIES.easy.lives);
-  assert.equal(newMatch('normal').lives, Match.DIFFICULTIES.normal.lives);
-  assert.equal(newMatch('hard').lives, Match.DIFFICULTIES.hard.lives);
+test('enemy shot erodes a barrier block and stops there', () => {
+  const match = newMatch();
+  const total = match.barrierBlocks.length;
+  enemyShotOn(match, match.barrierBlocks[0]);
+  match.resolveCollisions();
+  assert.equal(match.barrierBlocks.length, total - 1);
+  assert.equal(match.projectiles.length, 0);
 });
 
-test('update spawns enemies and reports the swarm wave', () => {
+test('ship shot erodes a barrier block too', () => {
   const match = newMatch();
+  const total = match.barrierBlocks.length;
+  shipShotOn(match, match.barrierBlocks[0]);
+  match.resolveCollisions();
+  assert.equal(match.barrierBlocks.length, total - 1);
+  assert.equal(match.projectiles.length, 0);
+});
+
+test('enemy touching a barrier block erases it', () => {
+  const match = newMatch();
+  const total = match.barrierBlocks.length;
+  const [enemy] = match.enemies;
+  enemy.x = match.barrierBlocks[0].x;
+  enemy.y = match.barrierBlocks[0].y;
+  match.resolveCollisions();
+  assert.ok(match.barrierBlocks.length < total);
+});
+
+test('barriers sit between the formation and the ship', () => {
+  const match = newMatch();
+  match.barrierBlocks.forEach(({ y, height }) => {
+    assert.ok(y > match.enemies[0].y);
+    assert.ok(y + height < match.ship.y);
+  });
+});
+
+test('hasLanded reports the formation reaching the ship line', () => {
+  const match = newMatch();
+  assert.equal(match.hasLanded, false);
+  const [enemy] = match.enemies;
+  enemy.y = match.ship.y - enemy.height + 1;
+  assert.equal(match.hasLanded, true);
+});
+
+test('clearing the formation starts a lower wave and rebuilds barriers', () => {
+  const match = newMatch();
+  const firstY = match.enemies[0].y;
+  const blocks = match.barrierBlocks.length;
+  match.barrierBlocks.pop();
+  match.enemies.length = 0;
+  match.update(0);
+  assert.equal(match.wave, 2);
+  assert.equal(match.enemies.length, Formation.ROWS * Formation.COLUMNS);
+  assert.ok(match.enemies[0].y > firstY);
+  assert.equal(match.barrierBlocks.length, blocks);
+});
+
+test('next wave marches faster than the first', () => {
+  const { stepEvery } = Match.DIFFICULTIES.normal;
+  const justBeforeFirstStep = stepEvery * 0.95;
+  const first = newMatch();
+  const firstX = first.enemies[0].x;
+  first.update(justBeforeFirstStep);
+  assert.equal(first.enemies[0].x, firstX);
+
+  const second = newMatch();
+  second.enemies.length = 0;
+  second.update(0);
+  const secondX = second.enemies[0].x;
+  second.update(justBeforeFirstStep);
+  assert.notEqual(second.enemies[0].x, secondX);
+});
+
+test('wave stays while enemies remain', () => {
+  const match = newMatch();
+  match.update(0);
   assert.equal(match.wave, 1);
-  match.update(Match.DIFFICULTIES.normal.spawnEvery);
-  assert.equal(match.enemies.length, 1);
+});
+
+test('difficulty sets initial lives', () => {
+  for (const id of Object.keys(Match.DIFFICULTIES)) {
+    assert.equal(newMatch(id).lives, Match.DIFFICULTIES[id].lives);
+  }
+});
+
+test('formation shots are added during update', () => {
+  const match = newMatch();
+  match.update(Match.DIFFICULTIES.normal.fireEvery);
+  assert.equal(match.projectiles.filter(({ owner }) => owner === 'enemy').length, 1);
 });
 
 test('fireShip adds a projectile only when the cooldown allows it', () => {
@@ -149,13 +179,6 @@ test('steerShip moves the ship on update', () => {
   match.steerShip(-1);
   match.update(0.1);
   assert.ok(match.ship.x < start);
-});
-
-test('gunners add their shots during update', () => {
-  const match = newMatch();
-  match.enemies.push(enemyFarFromShip('gunner'));
-  match.update(Enemy.KINDS.gunner.fireEvery + 0.01);
-  assert.equal(match.projectiles.filter((shot) => shot.owner === 'enemy').length, 1);
 });
 
 test('shots that leave the world are removed', () => {
