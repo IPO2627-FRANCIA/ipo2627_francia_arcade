@@ -35,7 +35,7 @@
     </section>
 
     <section class="panel panel--visible" id="setupPanel" aria-labelledby="setupTitle">
-      <h1 class="panel__title" id="setupTitle">Enjambre</h1>
+      <h1 class="panel__title panel__title--display" id="setupTitle">Enjambre</h1>
       <p class="panel__text" id="setupSummary">Destruye la formación antes de que llegue a tu altura.</p>
 
       <fieldset class="difficulty">
@@ -43,15 +43,15 @@
         <div class="difficulty__options">
           <label class="difficulty__option">
             <input class="difficulty__input" type="radio" name="difficulty" value="easy">
-            Fácil
+            <span class="difficulty__label">Fácil</span>
           </label>
           <label class="difficulty__option">
             <input class="difficulty__input" type="radio" name="difficulty" value="normal" checked>
-            Normal
+            <span class="difficulty__label">Normal</span>
           </label>
           <label class="difficulty__option">
             <input class="difficulty__input" type="radio" name="difficulty" value="hard">
-            Difícil
+            <span class="difficulty__label">Difícil</span>
           </label>
         </div>
       </fieldset>
@@ -67,7 +67,7 @@
       <div class="panel__actions">
         <button class="button button--primary" type="button" data-action="resume">Continuar</button>
         <button class="button" type="button" data-action="help">Ayuda</button>
-        <button class="button" type="button" data-action="finish">Finalizar</button>
+        <button class="button button--danger" type="button" data-action="finish">Finalizar</button>
       </div>
     </section>
   </main>
@@ -83,11 +83,20 @@
 
       <section class="help__section">
         <h3 class="help__subtitle">Controles</h3>
-        <ul class="help__list">
-          <li><kbd class="help__key">←</kbd> <kbd class="help__key">→</kbd> o <kbd class="help__key">A</kbd> <kbd class="help__key">D</kbd>: mover la nave</li>
-          <li><kbd class="help__key">Espacio</kbd>: disparar</li>
-          <li><kbd class="help__key">P</kbd>: pausar o continuar</li>
-        </ul>
+        <dl class="help__keys">
+          <div class="help__row">
+            <dt class="help__combo"><kbd class="help__key">←</kbd> <kbd class="help__key">→</kbd> o <kbd class="help__key">A</kbd> <kbd class="help__key">D</kbd></dt>
+            <dd>Mover la nave</dd>
+          </div>
+          <div class="help__row">
+            <dt class="help__combo"><kbd class="help__key">Espacio</kbd></dt>
+            <dd>Disparar</dd>
+          </div>
+          <div class="help__row">
+            <dt class="help__combo"><kbd class="help__key">P</kbd></dt>
+            <dd>Pausar o continuar</dd>
+          </div>
+        </dl>
       </section>
 
       <section class="help__section">
