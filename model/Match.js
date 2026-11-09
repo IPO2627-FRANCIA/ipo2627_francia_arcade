@@ -8,9 +8,9 @@ import { Swarm } from './Swarm.js';
  */
 export class Match {
   static DIFFICULTIES = Object.freeze({
-    easy: { speed: 0.8, spawnEvery: 1.2, lives: 5 },
-    normal: { speed: 1, spawnEvery: 0.9, lives: 3 },
-    hard: { speed: 1.3, spawnEvery: 0.65, lives: 3 },
+    easy: { speed: 0.8, spawnEvery: 2.4, lives: 5 },
+    normal: { speed: 1, spawnEvery: 2, lives: 3 },
+    hard: { speed: 1.2, spawnEvery: 1.4, lives: 3 },
   });
 
   #ship = new Ship();
