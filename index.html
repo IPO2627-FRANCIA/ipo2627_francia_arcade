@@ -72,7 +72,13 @@
 
         <div class="panel__actions">
           <button class="button button--primary" type="button" data-action="start" autofocus>Comenzar</button>
-          <button class="button" type="button" data-action="help">Ayuda</button>
+          <button class="button" type="button" data-action="help">
+          <svg class="button__icon button__icon--line" viewBox="0 0 12 12" aria-hidden="true">
+            <circle cx="6" cy="6" r="5" />
+            <path d="M4.5 4.6a1.6 1.6 0 1 1 2.4 1.4c-.6.4-.9.7-.9 1.4M6 9.2v.01" />
+          </svg>
+          Ayuda
+        </button>
         </div>
       </div>
     </section>
@@ -80,9 +86,25 @@
     <section class="panel" id="pausePanel" aria-labelledby="pauseTitle">
       <h2 class="panel__title" id="pauseTitle">Partida en pausa</h2>
       <div class="panel__actions">
-        <button class="button button--primary" type="button" data-action="resume">Continuar</button>
-        <button class="button" type="button" data-action="help">Ayuda</button>
-        <button class="button button--danger" type="button" data-action="finish">Finalizar</button>
+        <button class="button button--primary" type="button" data-action="resume">
+          <svg class="button__icon" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M3 1.5v9l7.5-4.5z" />
+          </svg>
+          Continuar
+        </button>
+        <button class="button" type="button" data-action="help">
+          <svg class="button__icon button__icon--line" viewBox="0 0 12 12" aria-hidden="true">
+            <circle cx="6" cy="6" r="5" />
+            <path d="M4.5 4.6a1.6 1.6 0 1 1 2.4 1.4c-.6.4-.9.7-.9 1.4M6 9.2v.01" />
+          </svg>
+          Ayuda
+        </button>
+        <button class="button button--danger" type="button" data-action="finish">
+          <svg class="button__icon" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M2 2h8v8H2z" />
+          </svg>
+          Finalizar
+        </button>
       </div>
     </section>
   </main>

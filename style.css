@@ -127,6 +127,15 @@
   fill: currentColor;
 }
 
+.button__icon--line {
+  width: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .button--compact {
   padding: var(--space-xs) var(--space-md);
   font-size: var(--font-size-label);
