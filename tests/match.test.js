@@ -132,6 +132,22 @@ test('clearing the formation starts a lower wave and rebuilds barriers', () => {
   assert.equal(match.barrierBlocks.length, blocks);
 });
 
+test('next wave marches faster than the first', () => {
+  const { stepEvery } = Match.DIFFICULTIES.normal;
+  const justBeforeFirstStep = stepEvery * 0.95;
+  const first = newMatch();
+  const firstX = first.enemies[0].x;
+  first.update(justBeforeFirstStep);
+  assert.equal(first.enemies[0].x, firstX);
+
+  const second = newMatch();
+  second.enemies.length = 0;
+  second.update(0);
+  const secondX = second.enemies[0].x;
+  second.update(justBeforeFirstStep);
+  assert.notEqual(second.enemies[0].x, secondX);
+});
+
 test('wave stays while enemies remain', () => {
   const match = newMatch();
   match.update(0);

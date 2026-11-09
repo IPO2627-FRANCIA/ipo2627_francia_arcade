@@ -63,6 +63,28 @@ test('formation marches faster as enemies are destroyed', () => {
   assert.notEqual(survivor.x, startX);
 });
 
+test('march does not depend on the frame rate with few enemies', () => {
+  const finalPosition = (step, frames) => {
+    const formation = newFormation({ stepEvery: 0.2, fireEvery: 1000 });
+    const [survivor] = formation.enemies;
+    formation.enemies.slice(1).forEach((enemy) => formation.remove(enemy));
+    for (let i = 0; i < frames; i++) formation.update(step);
+    return survivor.x;
+  };
+  const at30 = finalPosition(1 / 30, 9);
+  const at120 = finalPosition(1 / 120, 36);
+  assert.ok(Math.abs(at30 - at120) <= Formation.STEP_X, `${at30} vs ${at120}`);
+});
+
+test('every column can fire and always from its front enemy', () => {
+  for (let column = 0; column < Formation.COLUMNS; column++) {
+    const random = () => (column + 0.5) / Formation.COLUMNS;
+    const formation = newFormation({ stepEvery: 1000, fireEvery: 1 }, random);
+    const [shot] = formation.update(1);
+    assert.equal(shot.y, formation.lowestEdge);
+  }
+});
+
 test('only the front enemy of a column fires', () => {
   const formation = newFormation({ stepEvery: 1000, fireEvery: 1 });
   const [shot] = formation.update(1);

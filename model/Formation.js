@@ -70,10 +70,10 @@ export class Formation {
 
   #march(dt) {
     this.#stepTimer += dt;
-    const interval = this.#stepInterval();
-    if (this.#stepTimer < interval) return;
-    this.#stepTimer -= interval;
-    this.#takeStep();
+    while (this.#stepTimer >= this.#stepInterval()) {
+      this.#stepTimer -= this.#stepInterval();
+      this.#takeStep();
+    }
   }
 
   #stepInterval() {
