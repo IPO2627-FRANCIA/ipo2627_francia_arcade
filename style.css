@@ -28,6 +28,7 @@
   --color-primary-hover: oklch(86% 0.11 var(--hue));
   --color-on-primary: oklch(18% 0.03 var(--hue));
   --color-danger: oklch(78% 0.13 var(--hue-complement));
+  --color-surface-translucent: oklch(25% 0.03 var(--hue) / 0.88);
   --color-scrim: oklch(12% 0.02 var(--hue) / 0.84);
 
   /* Colores del lienzo: CanvasView los lee desde aquí. */
@@ -227,6 +228,23 @@
   display: flex;
 }
 
+.panel__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  width: min(100%, 28rem);
+}
+
+/* Resultado de la partida: fondo translúcido para que el texto no compita con el juego. */
+.panel--result .panel__content {
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-surface-translucent);
+  backdrop-filter: blur(0.5rem);
+}
+
 .panel__title {
   font-size: var(--font-size-heading);
   font-weight: var(--font-weight-strong);
@@ -235,6 +253,10 @@
 
 .panel__title--display {
   font-size: var(--font-size-display);
+}
+
+.panel--result .panel__title--display {
+  font-size: var(--font-size-heading);
 }
 
 .panel__text {

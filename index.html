@@ -35,30 +35,32 @@
     </section>
 
     <section class="panel panel--visible" id="setupPanel" aria-labelledby="setupTitle">
-      <h1 class="panel__title panel__title--display" id="setupTitle">Enjambre</h1>
-      <p class="panel__text" id="setupSummary">Destruye la formación antes de que llegue a tu altura.</p>
+      <div class="panel__content">
+        <h1 class="panel__title panel__title--display" id="setupTitle">Enjambre</h1>
+        <p class="panel__text" id="setupSummary">Destruye la formación antes de que llegue a tu altura.</p>
 
-      <fieldset class="difficulty">
-        <legend class="difficulty__legend">Dificultad</legend>
-        <div class="difficulty__options">
-          <label class="difficulty__option">
-            <input class="difficulty__input" type="radio" name="difficulty" value="easy">
-            <span class="difficulty__label">Fácil</span>
-          </label>
-          <label class="difficulty__option">
-            <input class="difficulty__input" type="radio" name="difficulty" value="normal" checked>
-            <span class="difficulty__label">Normal</span>
-          </label>
-          <label class="difficulty__option">
-            <input class="difficulty__input" type="radio" name="difficulty" value="hard">
-            <span class="difficulty__label">Difícil</span>
-          </label>
+        <fieldset class="difficulty">
+          <legend class="difficulty__legend">Dificultad</legend>
+          <div class="difficulty__options">
+            <label class="difficulty__option">
+              <input class="difficulty__input" type="radio" name="difficulty" value="easy">
+              <span class="difficulty__label">Fácil</span>
+            </label>
+            <label class="difficulty__option">
+              <input class="difficulty__input" type="radio" name="difficulty" value="normal" checked>
+              <span class="difficulty__label">Normal</span>
+            </label>
+            <label class="difficulty__option">
+              <input class="difficulty__input" type="radio" name="difficulty" value="hard">
+              <span class="difficulty__label">Difícil</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="panel__actions">
+          <button class="button button--primary" type="button" data-action="start" autofocus>Comenzar</button>
+          <button class="button" type="button" data-action="help">Ayuda</button>
         </div>
-      </fieldset>
-
-      <div class="panel__actions">
-        <button class="button button--primary" type="button" data-action="start" autofocus>Comenzar</button>
-        <button class="button" type="button" data-action="help">Ayuda</button>
       </div>
     </section>
 

@@ -1,4 +1,5 @@
 const VISIBLE_CLASS = 'panel--visible';
+const RESULT_CLASS = 'panel--result';
 
 /** Paneles sobre el lienzo, selector de dificultad y diálogo de ayuda. */
 export class OverlayView {
@@ -32,6 +33,7 @@ export class OverlayView {
   showSetup({ title, summary }) {
     this.#setupTitle.textContent = title;
     this.#setupSummary.textContent = summary;
+    this.#setupPanel.classList.add(RESULT_CLASS);
     this.#show(this.#setupPanel);
   }
 
