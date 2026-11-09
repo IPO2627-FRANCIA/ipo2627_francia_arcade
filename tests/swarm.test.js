@@ -32,6 +32,27 @@ test('enemy at the right edge stays inside WORLD', () => {
   }
 });
 
+test('enemy bounces off the left edge', () => {
+  // cos(PI) = -1: la deriva empuja hacia la izquierda.
+  const enemy = new Enemy('drone', Math.PI, 1);
+  enemy.x = 0;
+  enemy.update(DT);
+  assert.equal(enemy.x, 0);
+  enemy.update(DT);
+  assert.ok(enemy.x > 0);
+});
+
+test('enemy bounces off the right edge', () => {
+  // cos(2 * PI) = 1: la deriva empuja hacia la derecha.
+  const enemy = new Enemy('drone', 2 * Math.PI, 1);
+  const maxX = WORLD.width - enemy.width;
+  enemy.x = maxX;
+  enemy.update(DT);
+  assert.equal(enemy.x, maxX);
+  enemy.update(DT);
+  assert.ok(enemy.x < maxX);
+});
+
 test('drone never fires', () => {
   const enemy = new Enemy('drone', 100, 1);
   for (let i = 0; i < 600; i++) {
@@ -42,10 +63,14 @@ test('drone never fires', () => {
 
 test('gunner fires every fireEvery', () => {
   const enemy = new Enemy('gunner', 100, 1);
-  assert.equal(enemy.tryFire(), null);
-  enemy.update(Enemy.KINDS.gunner.fireEvery);
-  assert.ok(enemy.tryFire() instanceof Projectile);
-  assert.equal(enemy.tryFire(), null);
+  const { fireEvery } = Enemy.KINDS.gunner;
+  for (let cycle = 0; cycle < 2; cycle++) {
+    enemy.update(fireEvery - 0.1);
+    assert.equal(enemy.tryFire(), null);
+    enemy.update(0.12);
+    assert.ok(enemy.tryFire() instanceof Projectile);
+    assert.equal(enemy.tryFire(), null);
+  }
 });
 
 test('gunner needs two hits', () => {
@@ -86,9 +111,12 @@ test('swarm uses random to choose kind and keeps x inside WORLD', () => {
 test('swarm advances wave after ENEMIES_PER_WAVE spawns and speeds up later enemies', () => {
   const swarm = new Swarm({ speed: 1, spawnEvery: 1 }, ALWAYS_DRONE);
   assert.equal(swarm.wave, 1);
-  const [first] = swarm.update(1);
-  for (let i = 1; i < Swarm.ENEMIES_PER_WAVE; i++) swarm.update(1);
+  const baseSpeed = Enemy.KINDS.drone.speed;
+  for (let i = 0; i < Swarm.ENEMIES_PER_WAVE; i++) {
+    const [enemy] = swarm.update(1);
+    assert.equal(enemy.vy, baseSpeed);
+  }
   assert.equal(swarm.wave, 2);
   const [later] = swarm.update(1);
-  assert.ok(later.vy > first.vy);
+  assert.equal(later.vy, baseSpeed * (1 + Swarm.WAVE_SPEED_STEP));
 });
