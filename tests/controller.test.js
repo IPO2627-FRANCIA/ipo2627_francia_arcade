@@ -44,6 +44,7 @@ function setup() {
     helpCount: 0,
     showSetup(content) {
       this.setup.push(content);
+      log.push('showSetup');
     },
     showPause() {
       this.pauseCount += 1;
@@ -203,10 +204,15 @@ test('step converts milliseconds to seconds', () => {
 test('controller ends the match when lives reach zero', () => {
   const { overlay, hud, matches, frames, log, runFrame } = setup();
   overlay.handlers.start();
-  matches[0].lives = 0;
+  matches[0].resolveCollisions = () => {
+    matches[0].lives = 0;
+    log.push('collisions');
+  };
   log.length = 0;
   runFrame(16);
-  assert.ok(log.includes('render'));
+  assert.deepEqual(log, [
+    'requestAnimationFrame', 'steer', 'update', 'collisions', 'render', 'hud', 'showSetup',
+  ]);
   assert.equal(frames.size, 0);
   assert.equal(lastOf(hud.phases), 'over');
   assert.match(overlay.setup[0].summary, /120/);
