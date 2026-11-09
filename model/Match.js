@@ -57,6 +57,10 @@ export class Match {
     return this.#lives;
   }
 
+  get initialLives() {
+    return this.#difficulty.lives;
+  }
+
   get wave() {
     return this.#wave;
   }

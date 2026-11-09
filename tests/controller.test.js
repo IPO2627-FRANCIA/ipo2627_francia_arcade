@@ -26,7 +26,11 @@ function setup() {
   const hud = {
     handlers: {},
     phases: [],
-    update: () => log.push('hud'),
+    updates: [],
+    update(values) {
+      this.updates.push(values);
+      log.push('hud');
+    },
     setPhase(phase) {
       this.phases.push(phase);
     },
@@ -85,6 +89,7 @@ function setup() {
       score: 120,
       wave: 4,
       lives: 3,
+      initialLives: 5,
       hasLanded: false,
       steps: [],
       steers: [],
@@ -142,6 +147,13 @@ test('first statement of a frame requests the next frame', () => {
   log.length = 0;
   runFrame(16);
   assert.deepEqual(log, ['requestAnimationFrame', 'steer', 'update', 'collisions', 'render', 'hud']);
+});
+
+test('frame sends the match state to the hud', () => {
+  const { overlay, hud, runFrame } = setup();
+  overlay.handlers.start();
+  runFrame(16);
+  assert.deepEqual(hud.updates[0], { score: 120, wave: 4, lives: 3, maxLives: 5 });
 });
 
 test('frame applies keyboard input to the match', () => {
