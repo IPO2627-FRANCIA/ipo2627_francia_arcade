@@ -48,7 +48,7 @@
   --font-size-body: 1rem;
   --font-size-value: 1.25rem;
   --font-size-heading: 1.75rem;
-  --font-size-display: clamp(2.25rem, 6vw, 3.5rem);
+  --font-size-display: 3rem;
 
   --font-weight-strong: 700;
 
@@ -213,7 +213,7 @@
   display: none;
   grid-area: 1 / 1;
   flex-direction: column;
-  justify-content: center;
+  justify-content: safe center;
   align-items: center;
   gap: var(--space-lg);
   overflow-y: auto;
